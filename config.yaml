@@ -1,0 +1,134 @@
+seed: 20261003
+
+engine:
+  batch_size: 16
+  chunk_size: 256
+
+decoding:
+  chat:     {temperature: 0.7, top_p: 0.9, max_new_tokens: 256}
+  classify: {temperature: 0.0, top_p: 1.0, max_new_tokens: 48}
+  judge:    {temperature: 0.0, top_p: 1.0, max_new_tokens: 160}
+
+models:
+  qwen35-0.8b:
+    repo: Qwen/Qwen3.5-0.8B
+    revision: 2fc06364715b967f1860aea9cf38778875588b17
+    family: qwen
+    params_b: 0.87
+    precision: bf16
+    chat_template_kwargs: {enable_thinking: false}
+  qwen35-2b:
+    repo: Qwen/Qwen3.5-2B
+    revision: 15852e8c16360a2fea060d615a32b45270f8a8fc
+    family: qwen
+    params_b: 2.27
+    precision: bf16
+    chat_template_kwargs: {enable_thinking: false}
+  qwen35-4b:
+    repo: Qwen/Qwen3.5-4B
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    family: qwen
+    params_b: 4.66
+    precision: bf16
+    chat_template_kwargs: {enable_thinking: false}
+  qwen35-9b:
+    repo: Qwen/Qwen3.5-9B
+    revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+    family: qwen
+    params_b: 9.65
+    precision: 8bit
+    chat_template_kwargs: {enable_thinking: false}
+  phi4-mini:
+    repo: microsoft/Phi-4-mini-instruct
+    revision: cfbefacb99257ffa30c83adab238a50856ac3083
+    family: phi
+    params_b: 3.84
+    precision: bf16
+  granite41-3b:
+    repo: ibm-granite/granite-4.1-3b
+    revision: c0650403e44e78ec0262dab1c90914c65b196c4e
+    family: granite
+    params_b: 3.40
+    precision: bf16
+  ministral3-3b:
+    repo: mistralai/Ministral-3-3B-Instruct-2512-BF16
+    revision: b6d637bef2393152b3da2b2fde72eecdee30557e
+    family: mistral
+    params_b: 3.85
+    precision: bf16
+    tokenizer_kwargs: {fix_mistral_regex: true}
+  gemma4-12b:
+    repo: google/gemma-4-12B-it
+    revision: 707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7
+    family: gemma
+    params_b: 11.96
+    precision: 4bit
+  gemma4-31b:
+    repo: google/gemma-4-31B-it
+    revision: 842da3794eaa0b77d5f08bae87a17459d91ff475
+    family: gemma
+    params_b: 31.27
+    precision: 4bit
+  smollm2-360m:
+    repo: HuggingFaceTB/SmolLM2-360M-Instruct
+    revision: a10cc1512eabd3dde888204e902eca88bddb4951
+    family: smollm
+    params_b: 0.36
+    precision: bf16
+
+tested: [qwen35-0.8b, qwen35-2b, qwen35-4b, phi4-mini, granite41-3b, ministral3-3b, qwen35-9b]
+groups:
+  size:   [qwen35-0.8b, qwen35-2b, qwen35-4b, qwen35-9b]
+  family: [qwen35-4b, phi4-mini, granite41-3b, ministral3-3b]
+judge: gemma4-12b
+
+scorers:
+  style_embedding: {repo: StyleDistance/styledistance, revision: b7df5f0b0480773c097ba3121d83ca32b71015ca}
+  formality: {repo: s-nlp/roberta-base-formality-ranker, revision: db9388f420a835ad49c45840adc9850a52240627}
+  irony:     {repo: cardiffnlp/twitter-roberta-base-irony, revision: 3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf}
+  sentiment: {repo: cardiffnlp/twitter-roberta-base-sentiment-latest, revision: 3216a57f2a0d9c45a2e6c20157c20c49fb4bf9c7}
+  emotion:   {repo: SamLowe/roberta-base-go_emotions, revision: d75048347613a25d77de8cf6412eaae9fa7b26be}
+
+stats: {n_bootstrap: 2000}
+
+judge_check: {required: true, pilot_items: 30, min_kappa: 0.6, tolerance: 0.1}
+
+validation: {min_spearman: 0.3}
+
+small:
+  judge: qwen35-0.8b
+
+rq1:
+  conversations:
+    repo: AlekseyKorshuk/persona-chat
+    revision: 498fd0081de41b8833a72e1a126aaf52917e1ddd
+    split: validation
+  annotation: {n_items: 100}
+
+rq2:
+  goemotions:
+    repo: google-research-datasets/go_emotions
+    revision: add492243ff905527e67aeb8b80c082af02207c3
+    max_labels: 3
+  empathetic_dialogues:
+    url: "https://dl.fbaipublicfiles.com/parlai/empatheticdialogues/empatheticdialogues.tar.gz"
+  baseline:
+    repo: FacebookAI/roberta-base
+    revision: e2da8e2f811d1448a5b465c236feacd80ffbac7b
+    epochs: 3
+    learning_rate: 2.0e-5
+    batch_size: 32
+    max_length: 128
+
+rq3:
+  first_answer_tokens: 160
+  pushback_tokens: 200
+
+rq4:
+  moralchoice:
+    repo: ninoscherrer/moralchoice
+    revision: 89c0fe7b158b5ade5d10e0644c1aa20ab4c78cbe
+    high_ambiguity: {file: scenarios/moralchoice_high_ambiguity.csv}
+    low_ambiguity:  {file: scenarios/moralchoice_low_ambiguity.csv}
+  choice_tokens: 80
+  n_permutations: 5000

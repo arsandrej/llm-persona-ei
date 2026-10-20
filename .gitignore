@@ -1,0 +1,12 @@
+rq*/results/
+rq*/data/downloads/
+comparison/results/
+reports/
+
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.idea/
+.claude/settings.local.json
+.env
